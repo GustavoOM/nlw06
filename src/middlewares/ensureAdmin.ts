@@ -9,6 +9,6 @@ export function ensureAdmin(request:Request, response:Response, next: NextFuncti
     }
 
     return response.status(401).json({
-        error: "Permission danied!"
+        error: "Permission danied"
     })
 }
