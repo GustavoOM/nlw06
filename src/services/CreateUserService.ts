@@ -1,22 +1,32 @@
 import { getCustomRepository } from "typeorm"
-import { UserRepositorires } from "../repositories/UsersRepositories"
+import { UsersRepositorires } from "../repositories/UsersRepositories"
+import {hash} from "bcryptjs"
 
 interface IUserRequest {
     name: string
     email: string
+    password: string
     admin?: boolean
 }
 
 class CreateUserService{
-    async execute({name, email, admin}:IUserRequest){
-        const userRepository = getCustomRepository(UserRepositorires)
+    async execute({name, email, admin = false, password}:IUserRequest){
+        const userRepository = getCustomRepository(UsersRepositorires)
 
         if(!email){
-            throw new Error("Email incorrect")
+            throw new Error("Email required")
         }
 
         if(!name){
-            throw new Error("Name incorrect")
+            throw new Error("Name required")
+        }
+
+        if(!password){
+            throw new Error("Password required")
+        }
+
+        if(password.length < 8){
+            throw new Error("Password must be minimum 8 characters")
         }
 
         const userAlreadyExists = await userRepository.findOne({
@@ -27,9 +37,12 @@ class CreateUserService{
             throw new Error("User already exists!")
         }
 
+        const passwordHash = await hash(password, 8)
+
         const user = userRepository.create({
             name,
             email,
+            password:passwordHash,
             admin
         })
 
